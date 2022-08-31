@@ -18,146 +18,11 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "c2aaf627-8ade-44a8-afa3-793da8f97d3d"
+				"spark.autotune.trackingId": "7afb2b00-6ba9-4c67-9613-83fc63791966"
 			}
 		},
 		"metadata": {
 			"saveOutput": true,
-			"synapse_widget": {
-				"version": "0.1",
-				"state": {
-					"260cf4b0-e32c-4fa3-987f-3929715d96aa": {
-						"type": "Synapse.DataFrame",
-						"sync_state": {
-							"table": {
-								"rows": [
-									{
-										"0": "Start Time",
-										"1": "Duration",
-										"2": "Run ID",
-										"3": "Name",
-										"4": "Source Type",
-										"5": "Source Name",
-										"6": "User",
-										"7": "Status",
-										"8": "max_feat",
-										"9": "maxdepth",
-										"10": "num_trees",
-										"11": "mse"
-									},
-									{
-										"0": "2022-08-25 17:15:45",
-										"1": "3.9s",
-										"2": "25a9b95a7a264417befc2d64aee182e2",
-										"4": "NOTEBOOK",
-										"5": "/Shared/202208/2208200030000022Venkata/LogRunsToExperiment",
-										"6": "huangzhi@microsoft.com",
-										"7": "FINISHED",
-										"8": "3",
-										"9": "6",
-										"10": "100",
-										"11": "3316.782078014208"
-									},
-									{
-										"0": "2022-08-25 16:18:07",
-										"1": "4.0s",
-										"2": "0e19e2d23499442ebec2bc246d7ec368",
-										"4": "NOTEBOOK",
-										"5": "/Shared/202208/2208200030000022Venkata/LogRunsToExperiment",
-										"6": "huangzhi@microsoft.com",
-										"7": "FINISHED",
-										"8": "3",
-										"9": "6",
-										"10": "100",
-										"11": "3307.8569859555355"
-									}
-								],
-								"schema": [
-									{
-										"key": "0",
-										"name": "_c0",
-										"type": "string"
-									},
-									{
-										"key": "1",
-										"name": "_c1",
-										"type": "string"
-									},
-									{
-										"key": "2",
-										"name": "_c2",
-										"type": "string"
-									},
-									{
-										"key": "3",
-										"name": "_c3",
-										"type": "string"
-									},
-									{
-										"key": "4",
-										"name": "_c4",
-										"type": "string"
-									},
-									{
-										"key": "5",
-										"name": "_c5",
-										"type": "string"
-									},
-									{
-										"key": "6",
-										"name": "_c6",
-										"type": "string"
-									},
-									{
-										"key": "7",
-										"name": "_c7",
-										"type": "string"
-									},
-									{
-										"key": "8",
-										"name": "_c8",
-										"type": "string"
-									},
-									{
-										"key": "9",
-										"name": "_c9",
-										"type": "string"
-									},
-									{
-										"key": "10",
-										"name": "_c10",
-										"type": "string"
-									},
-									{
-										"key": "11",
-										"name": "_c11",
-										"type": "string"
-									}
-								],
-								"truncated": false
-							},
-							"isSummary": false,
-							"language": "scala"
-						},
-						"persist_state": {
-							"view": {
-								"type": "details",
-								"chartOptions": {
-									"chartType": "bar",
-									"aggregationType": "count",
-									"categoryFieldKeys": [
-										"0"
-									],
-									"seriesFieldKeys": [
-										"0"
-									],
-									"isStacked": false
-								}
-							}
-						}
-					}
-				}
-			},
 			"enableDebugMode": false,
 			"kernelspec": {
 				"name": "synapse_pyspark",
@@ -173,14 +38,13 @@
 				"endpoint": "https://huangzhitestsynapse.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/sparkpool2",
 				"auth": {
 					"type": "AAD",
-					"authResource": "https://dev.azuresynapse.net",
-					"authHeader": null
+					"authResource": "https://dev.azuresynapse.net"
 				},
 				"sparkVersion": "3.2",
 				"nodeCount": 3,
 				"cores": 4,
 				"memory": 28,
-				"extraHeader": null
+				"automaticScaleJobs": false
 			},
 			"sessionKeepAliveTimeout": 30
 		},
@@ -201,8 +65,7 @@
 					"df = spark.read.csv('abfss://dataset@huangzhistoragelogs.dfs.core.windows.net/mstest/')\r\n",
 					"display(df.limit(10))"
 				],
-				"attachments": null,
-				"execution_count": 1
+				"execution_count": 2
 			},
 			{
 				"cell_type": "code",
@@ -216,13 +79,19 @@
 							"deleting": false
 						}
 					},
+					"microsoft": {
+						"language": "python"
+					},
 					"collapsed": false
 				},
 				"source": [
+					"%%pyspark\r\n",
+					"spark.conf.set(\"spark.storage.synapse.huangzhistoragelogs.dfs.core.windows.net.linkedServiceName\", \"AzureDataLakeStorage2\")\r\n",
+					"spark.conf.set(\"fs.azure.account.oauth.provider.type.huangzhistoragelogs.dfs.core.windows.net\",\"com.microsoft.azure.synapse.tokenlibrary.LinkedServiceBasedTokenProvider\")\r\n",
+					"\r\n",
 					"df = spark.read.csv('abfss://dataset@huangzhistoragelogs.dfs.core.windows.net/mstest/')\r\n",
 					"display(df.limit(10))"
 				],
-				"attachments": null,
 				"execution_count": 10
 			},
 			{
@@ -241,7 +110,6 @@
 				"source": [
 					""
 				],
-				"attachments": null,
 				"execution_count": null
 			}
 		]
