@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "50b890b6-0c61-4db9-bd1a-0a9567d71aec"
+				"spark.autotune.trackingId": "9ee5d1b7-978f-446d-a1b8-1dc23953a0b1"
 			}
 		},
 		"metadata": {
@@ -59,13 +59,13 @@
 				},
 				"source": [
 					"%%pyspark\r\n",
-					"spark.conf.set(\"spark.storage.synapse.huangzhistoragelogs.dfs.core.windows.net.linkedServiceName\", \"AzureDataLakeStorage1\")\r\n",
+					"spark.conf.set(\"spark.storage.synapse.huangzhistoragelogs.dfs.core.windows.net.linkedServiceName\", \"AzureDataLakeStorage3\")\r\n",
 					"spark.conf.set(\"fs.azure.account.oauth.provider.type.huangzhistoragelogs.dfs.core.windows.net\",\"com.microsoft.azure.synapse.tokenlibrary.LinkedServiceBasedTokenProvider\")\r\n",
 					"\r\n",
 					"df = spark.read.csv('abfss://dataset@huangzhistoragelogs.dfs.core.windows.net/mstest/')\r\n",
 					"display(df.limit(10))"
 				],
-				"execution_count": 17
+				"execution_count": 25
 			},
 			{
 				"cell_type": "code",
@@ -79,20 +79,16 @@
 							"deleting": false
 						}
 					},
-					"microsoft": {
-						"language": "python"
-					},
 					"collapsed": false
 				},
 				"source": [
-					"%%pyspark\r\n",
-					"spark.conf.set(\"spark.storage.synapse.huangzhistoragelogs.dfs.core.windows.net.linkedServiceName\", \"AzureDataLakeStorage2\")\r\n",
-					"spark.conf.set(\"fs.azure.account.oauth.provider.type.huangzhistoragelogs.dfs.core.windows.net\",\"com.microsoft.azure.synapse.tokenlibrary.LinkedServiceBasedTokenProvider\")\r\n",
-					"\r\n",
-					"df = spark.read.csv('abfss://dataset@huangzhistoragelogs.dfs.core.windows.net/mstest/')\r\n",
+					"spark.conf.set(f\"spark.storage.synapse.huangzhistoragelogs.dfs.core.windows.net.linkedServiceName\", \"AzureDataLakeStorage1\")\r\n",
+					"spark.conf.set(f\"fs.azure.account.auth.type.huangzhistoragelogs.dfs.core.windows.net\", \"SAS\")\r\n",
+					"spark.conf.set(f\"fs.azure.sas.token.provider.type.huangzhistoragelogs.dfs.core.windows.net\", \"com.microsoft.azure.synapse.tokenlibrary.LinkedServiceBasedSASProvider\")\r\n",
+					"df = spark.read.csv(\"abfss://dataset@huangzhistoragelogs.dfs.core.windows.net/mstest/\")\r\n",
 					"display(df.limit(10))"
 				],
-				"execution_count": 16
+				"execution_count": 22
 			},
 			{
 				"cell_type": "code",
