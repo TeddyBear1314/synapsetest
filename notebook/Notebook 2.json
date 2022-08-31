@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "059f9486-ad3e-4839-9663-8d5e9d222058"
+				"spark.autotune.trackingId": "50b890b6-0c61-4db9-bd1a-0a9567d71aec"
 			}
 		},
 		"metadata": {
@@ -65,7 +65,7 @@
 					"df = spark.read.csv('abfss://dataset@huangzhistoragelogs.dfs.core.windows.net/mstest/')\r\n",
 					"display(df.limit(10))"
 				],
-				"execution_count": 2
+				"execution_count": 17
 			},
 			{
 				"cell_type": "code",
@@ -92,7 +92,7 @@
 					"df = spark.read.csv('abfss://dataset@huangzhistoragelogs.dfs.core.windows.net/mstest/')\r\n",
 					"display(df.limit(10))"
 				],
-				"execution_count": 15
+				"execution_count": 16
 			},
 			{
 				"cell_type": "code",
