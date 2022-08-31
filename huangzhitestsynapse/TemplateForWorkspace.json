@@ -1473,7 +1473,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "ff024acc-fa16-48dd-84f1-426fae27a1c9"
+						"spark.autotune.trackingId": "ac42aa52-2d0d-441e-99ca-408cfd5f16e6"
 					}
 				},
 				"metadata": {
@@ -1521,7 +1521,7 @@
 							"display(df.limit(10))"
 						],
 						"outputs": [],
-						"execution_count": 25
+						"execution_count": 26
 					},
 					{
 						"cell_type": "code",
