@@ -1,0 +1,672 @@
+{
+	"name": "Notebook 1",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "sparkpool",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "56g",
+			"driverCores": 8,
+			"executorMemory": "56g",
+			"executorCores": 8,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "7aef3995-1b75-473d-8a06-48665c120522"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/76ebc6d1-182c-411a-9b4d-aed0242f8a82/resourceGroups/huangzhitest/providers/Microsoft.Synapse/workspaces/huangzhitestsynapse/bigDataPools/sparkpool",
+				"name": "sparkpool",
+				"type": "Spark",
+				"endpoint": "https://huangzhitestsynapse.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/sparkpool",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.2",
+				"nodeCount": 3,
+				"cores": 8,
+				"memory": 56,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"mssparkutils.fs.mount( \r\n",
+					"    \"abfss://dataset@huangzhitestadls.dfs.core.windows.net\", \r\n",
+					"    \"/test\", \r\n",
+					"    {\"linkedService\":\"huangzhitestsynapse-WorkspaceDefaultStorage\"} \r\n",
+					")\r\n",
+					"\r\n",
+					"jobId = mssparkutils.env.getJobId()\r\n",
+					""
+				],
+				"attachments": null,
+				"execution_count": 51
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import os\r\n",
+					"import json\r\n",
+					"metastore_dir = \"/home/trusted-service-user/tmp_metadata\"\r\n",
+					"metastore_view_dir =  \"/home/trusted-service-user/tmp_metadata_views\"\r\n",
+					"default_database_location = \"dbfs:/user/hive/warehouse\""
+				],
+				"attachments": null,
+				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# copy table DDL into a local location.\r\n",
+					"import shutil\r\n",
+					"if (os.path.exists(metastore_dir)):\r\n",
+					"    shutil.rmtree(metastore_dir)\r\n",
+					"shutil.copytree(f\"/synfs/{jobId}/test/spark_metadata\", \"/home/trusted-service-user/tmp_metadata\")"
+				],
+				"attachments": null,
+				"execution_count": 106
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"os.listdir('/home/trusted-service-user/tmp_metadata/default')"
+				],
+				"attachments": null,
+				"execution_count": 112
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					""
+				],
+				"attachments": null,
+				"execution_count": 90
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def get_database_detail_dict(db_log='database_details.log'):\r\n",
+					"    db_logfile = os.path.join(metastore_dir, db_log)\r\n",
+					"    all_db_json = {}\r\n",
+					"    with open(db_logfile, 'r') as fp:\r\n",
+					"        for x in fp:\r\n",
+					"            db_json = json.loads(x)\r\n",
+					"            db_name = db_json.pop('Namespace Name')\r\n",
+					"            all_db_json[db_name] = db_json\r\n",
+					"    return all_db_json\r\n",
+					"\r\n",
+					"\r\n",
+					"def create_database_db(db_name, db_attributes):\r\n",
+					"    location = db_attributes.get('Location', '')\r\n",
+					"    if not location.startswith(default_database_location):\r\n",
+					"        create_stmt = f\"CREATE DATABASE IF NOT EXISTS {db_name} LOCATION '{location}'\"\r\n",
+					"    else:\r\n",
+					"        create_stmt = f\"CREATE DATABASE IF NOT EXISTS {db_name}\"\r\n",
+					"    # print(create_stmt)\r\n",
+					"    db_results = spark.sql(create_stmt)\r\n",
+					"    return db_results\r\n",
+					"\r\n",
+					"def get_ddl_by_keyword_group(local_path): \r\n",
+					"    \"\"\"\r\n",
+					"    return a list of DDL strings that are grouped by keyword arguments and their parameters\r\n",
+					"    \"\"\"\r\n",
+					"    ddl_statement = []\r\n",
+					"    parameter_group = []\r\n",
+					"    with open(local_path, 'r') as fp:\r\n",
+					"        for line in fp:\r\n",
+					"            raw = line.rstrip()\r\n",
+					"            if not raw:\r\n",
+					"                # make sure it's not an empty line, continue if empty\r\n",
+					"                continue\r\n",
+					"            if raw[0] == ' ' or raw[0] == ')':\r\n",
+					"                parameter_group.append(raw)\r\n",
+					"            else:\r\n",
+					"                if parameter_group:\r\n",
+					"                    ddl_statement.append(''.join(parameter_group))\r\n",
+					"                parameter_group = [raw]\r\n",
+					"        ddl_statement.append(''.join(parameter_group)) \r\n",
+					"    return ddl_statement\r\n",
+					"\r\n",
+					"def is_ddl_a_view(ddl_list):\r\n",
+					"    first_statement = ddl_list[0]\r\n",
+					"    if first_statement.startswith('CREATE VIEW'):\r\n",
+					"        return True\r\n",
+					"    return False\r\n",
+					"\r\n",
+					"def move_table_view(db_name, tbl_name, local_table_ddl):\r\n",
+					"    ddl_statement = get_ddl_by_keyword_group(local_table_ddl)\r\n",
+					"    if is_ddl_a_view(ddl_statement):\r\n",
+					"        dst_local_ddl = os.path.join(metastore_view_dir, db_name, tbl_name)\r\n",
+					"        os.rename(local_table_ddl, dst_local_ddl)\r\n",
+					"        return True\r\n",
+					"    return False\r\n",
+					"\r\n",
+					"def get_path_option_if_available(stmt):\r\n",
+					"    # parse the OPTIONS keyword and pull out the `path` parameter if it exists\r\n",
+					"    import re\r\n",
+					"    params = re.search(r'\\((.*?)\\)', stmt).group(1) # \r\n",
+					"    params_list = list(map(lambda p: p.lstrip().rstrip(), params.split(','))) # \r\n",
+					"    for x in params_list:\r\n",
+					"        if x.startswith('path'):\r\n",
+					"            return f'OPTIONS ( {x} )' # \r\n",
+					"    return ''    \r\n",
+					"\r\n",
+					"def is_table_location_defined(local_table_path): \r\n",
+					"    \"\"\" check if LOCATION or OPTIONS(path ..) are defined for the table\r\n",
+					"    \"\"\"\r\n",
+					"    ddl_statement = get_ddl_by_keyword_group(local_table_path) \r\n",
+					"    for keyword_param in ddl_statement: \r\n",
+					"        if keyword_param.startswith('OPTIONS'): \r\n",
+					"            options_param = get_path_option_if_available(keyword_param) \r\n",
+					"            if options_param:\r\n",
+					"                # if the return is not empty, the path option is provided which means its an external table\r\n",
+					"                return True\r\n",
+					"        elif keyword_param.startswith('LOCATION'):\r\n",
+					"            # if LOCATION is defined, we know the external table location\r\n",
+					"            return True\r\n",
+					"    return False\r\n",
+					"\r\n",
+					"def update_table_ddl(local_table_path, db_path):\r\n",
+					"    # check if the database location / path is the default DBFS path\r\n",
+					"    table_name = os.path.basename(local_table_path) # local_table_path的basename就是table_name\r\n",
+					"    is_db_default_path = db_path.startswith(default_database_location) #\r\n",
+					"    if (not is_db_default_path) and (not is_table_location_defined(local_table_path)):\r\n",
+					"        # the LOCATION attribute is not defined and the Database has a custom location defined\r\n",
+					"        # therefore we need to add it to the DDL, e.g. dbfs:/db_path/table_name\r\n",
+					"        table_path = os.path.join(db_path, table_name)\r\n",
+					"        location_stmt = f\"\\nLOCATION '{table_path}'\"\r\n",
+					"        with open(local_table_path, 'a') as fp:\r\n",
+					"            fp.write(location_stmt)\r\n",
+					"        return True\r\n",
+					"    return False\r\n",
+					"\r\n",
+					"def is_delta_table(local_path):\r\n",
+					"    with open(local_path, 'r') as fp:\r\n",
+					"        for line in fp:\r\n",
+					"            lower_line = line.lower()\r\n",
+					"            if lower_line.startswith('using delta'):\r\n",
+					"                return True\r\n",
+					"    return False\r\n",
+					"\r\n",
+					"def get_local_tmp_ddl_if_applicable(current_local_ddl_path):\r\n",
+					"    return current_local_ddl_path\r\n",
+					"\r\n",
+					"def apply_table_ddl(local_table_path, db_path):\r\n",
+					"    \"\"\"\r\n",
+					"    Run DDL command on destination workspace\r\n",
+					"    :param local_table_path: local file path to the table DDL\r\n",
+					"    :param db_path: database S3 / Blob Storage / ADLS path for the Database\r\n",
+					"    \"\"\"\r\n",
+					"    updated_table_status = update_table_ddl(local_table_path, db_path) # \r\n",
+					"\r\n",
+					"    # update local table ddl to a new temp file with OPTIONS and TBLPROPERTIES removed from the DDL for delta tables\r\n",
+					"    if is_delta_table(local_table_path):\r\n",
+					"        local_table_path = get_local_tmp_ddl_if_applicable(local_table_path)\r\n",
+					"\r\n",
+					"    with open(local_table_path, \"r\") as fp:\r\n",
+					"        ddl_statement = fp.read()\r\n",
+					"        #print(ddl_statement)\r\n",
+					"        try:\r\n",
+					"            ddl_results = spark.sql(ddl_statement)\r\n",
+					"        except Exception as e:\r\n",
+					"            if \"mstest\" in ddl_statement:\r\n",
+					"                print(e)\r\n",
+					"           \r\n",
+					"def delete_dir_if_empty(local_dir):\r\n",
+					"    \r\n",
+					"    if os.path.exists(local_dir) and len(os.listdir(local_dir)) == 0:\r\n",
+					"        os.rmdir(local_dir)           "
+				],
+				"attachments": null,
+				"execution_count": 150
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"print(tables)"
+				],
+				"attachments": null,
+				"execution_count": 151
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"\r\n",
+					"db_list = get_database_detail_dict()\r\n",
+					"\r\n",
+					"os.makedirs(metastore_view_dir, exist_ok=True)\r\n",
+					"\r\n",
+					"# recreate tables\r\n",
+					"\r\n",
+					"for db_name in db_list:\r\n",
+					"    # create a dir to host the view ddl if we find them\r\n",
+					"    os.makedirs(os.path.join(metastore_view_dir, db_name), exist_ok=True)\r\n",
+					"    # get the local database path to list tables\r\n",
+					"    local_db_path = os.path.join(metastore_dir, db_name)\r\n",
+					"    # get a dict of the database attributes\r\n",
+					"    database_attributes = all_db_details_json.get(db_name, '')\r\n",
+					"    create_database_db(db_name, database_attributes)\r\n",
+					"    db_path = database_attributes.get('Location')\r\n",
+					"    tables = os.listdir(local_db_path)\r\n",
+					"    print(tables)\r\n",
+					"    for tbl_name in tables:\r\n",
+					"        \r\n",
+					"        local_table_ddl = os.path.join(local_db_path, tbl_name)\r\n",
+					"        if tbl_name == \"mstest22\":\r\n",
+					"            print(local_table_ddl)\r\n",
+					"        if not move_table_view(db_name, tbl_name, local_table_ddl):\r\n",
+					"            # we hit a table ddl here, so we apply the ddl\r\n",
+					"            is_successful = apply_table_ddl(local_table_ddl, db_path)\r\n",
+					"        else:\r\n",
+					"            print(f'Moving view ddl to re-apply later: {db_name}.{tbl_name}')   \r\n",
+					"    delete_dir_if_empty(os.path.join(metastore_view_dir, db_name))\r\n",
+					"\r\n",
+					""
+				],
+				"attachments": null,
+				"execution_count": 152
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"microsoft": {
+						"language": "sparksql"
+					},
+					"collapsed": false
+				},
+				"source": [
+					"%%sql\r\n",
+					"CREATE TABLE default.mstest22 (\r\n",
+					"  quarterlymeterdatafromdate TIMESTAMP,\r\n",
+					"  `input_file_name` STRING)\r\n",
+					"USING parquet\r\n",
+					"LOCATION 'abfss://dataset@huangzhitestadls.dfs.core.windows.net/mstest2'"
+				],
+				"attachments": null,
+				"execution_count": 154
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# recreate views\r\n",
+					"views_db_list = os.listdir(metastore_view_dir)\r\n",
+					"for db_name in views_db_list:\r\n",
+					"    local_view_db_path = os.path.join(metastore_view_dir, db_name)\r\n",
+					"    database_attributes = all_db_details_json.get(db_name, '')\r\n",
+					"    db_path = database_attributes.get('Location')\r\n",
+					"    if os.path.isdir(local_view_db_path):\r\n",
+					"        views = os.listdir(local_view_db_path)\r\n",
+					"        for view_name in views:\r\n",
+					"            local_view_ddl = os.path.join(metastore_view_dir, db_name, '/', view_name)\r\n",
+					"            is_successful = apply_table_ddl(local_view_ddl, db_path)\r\n",
+					""
+				],
+				"attachments": null,
+				"execution_count": 109
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"os.listdir(\"/home/trusted-service-user/tmp_metadata_views\")"
+				],
+				"attachments": null,
+				"execution_count": 131
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"microsoft": {
+						"language": "sparksql"
+					},
+					"collapsed": false
+				},
+				"source": [
+					"%%sql\r\n",
+					"show tables"
+				],
+				"attachments": null,
+				"execution_count": 149
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"microsoft": {
+						"language": "sparksql"
+					},
+					"collapsed": false
+				},
+				"source": [
+					"%%sql\r\n",
+					"select * from mstest22"
+				],
+				"attachments": null,
+				"execution_count": 155
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				],
+				"attachments": null,
+				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				],
+				"attachments": null,
+				"execution_count": 26
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"jobId = mssparkutils.env.getJobId()"
+				],
+				"attachments": null,
+				"execution_count": 16
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import os\r\n",
+					"os.listdir(f\"/synfs/{jobId}/test/synapsemetadata/metadata\")"
+				],
+				"attachments": null,
+				"execution_count": 17
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					" "
+				],
+				"attachments": null,
+				"execution_count": 8
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				],
+				"attachments": null,
+				"execution_count": 9
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				],
+				"attachments": null,
+				"execution_count": 14
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"\r\n",
+					""
+				],
+				"attachments": null,
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				],
+				"attachments": null,
+				"execution_count": null
+			}
+		]
+	}
+}

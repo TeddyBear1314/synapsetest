@@ -1,0 +1,46 @@
+{
+	"name": "mstest2",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.autotune.trackingId": "be7263d9-1f9a-43b6-822d-011b84e2dd97",
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.dynamicAllocation.minExecutors": "2"
+			}
+		},
+		"metadata": {
+			"enableDebugMode": false,
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "python"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"print(hello world)"
+				],
+				"attachments": null,
+				"execution_count": null
+			}
+		]
+	}
+}
