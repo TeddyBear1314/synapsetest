@@ -14,6 +14,9 @@
 		"AzureDataLakeStorage1_properties_typeProperties_url": {
 			"value": "https://huangzhistoragelogs.dfs.core.windows.net/"
 		},
+		"AzureDataLakeStorage3_properties_typeProperties_url": {
+			"value": "https://huangzhistoragelogs.dfs.core.windows.net/"
+		},
 		"huangzhitestsynapse-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"value": "https://huangzhitestadls.dfs.core.windows.net"
 		}

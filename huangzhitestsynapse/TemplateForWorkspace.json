@@ -19,6 +19,10 @@
 			"type": "string",
 			"defaultValue": "https://huangzhistoragelogs.dfs.core.windows.net/"
 		},
+		"AzureDataLakeStorage3_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://huangzhistoragelogs.dfs.core.windows.net/"
+		},
 		"huangzhitestsynapse-WorkspaceDefaultStorage_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://huangzhitestadls.dfs.core.windows.net"
@@ -50,6 +54,25 @@
 						"type": "SecureString",
 						"value": "[parameters('AzureDataLakeStorage1_accountKey')]"
 					}
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AzureDataLakeStorage3')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('AzureDataLakeStorage3_properties_typeProperties_url')]"
 				},
 				"connectVia": {
 					"referenceName": "AutoResolveIntegrationRuntime",
@@ -1450,7 +1473,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "f80a4165-ef8e-4a73-92d4-c28fa9229743"
+						"spark.autotune.trackingId": "ff024acc-fa16-48dd-84f1-426fae27a1c9"
 					}
 				},
 				"metadata": {
@@ -1491,14 +1514,14 @@
 						},
 						"source": [
 							"%%pyspark\r\n",
-							"spark.conf.set(\"spark.storage.synapse.huangzhistoragelogs.dfs.core.windows.net.linkedServiceName\", \"AzureDataLakeStorage1\")\r\n",
+							"spark.conf.set(\"spark.storage.synapse.huangzhistoragelogs.dfs.core.windows.net.linkedServiceName\", \"AzureDataLakeStorage3\")\r\n",
 							"spark.conf.set(\"fs.azure.account.oauth.provider.type.huangzhistoragelogs.dfs.core.windows.net\",\"com.microsoft.azure.synapse.tokenlibrary.LinkedServiceBasedTokenProvider\")\r\n",
 							"\r\n",
 							"df = spark.read.csv('abfss://dataset@huangzhistoragelogs.dfs.core.windows.net/mstest/')\r\n",
 							"display(df.limit(10))"
 						],
 						"outputs": [],
-						"execution_count": 17
+						"execution_count": 25
 					},
 					{
 						"cell_type": "code",
@@ -1512,21 +1535,17 @@
 									"deleting": false
 								}
 							},
-							"microsoft": {
-								"language": "python"
-							},
 							"collapsed": false
 						},
 						"source": [
-							"%%pyspark\r\n",
-							"spark.conf.set(\"spark.storage.synapse.huangzhistoragelogs.dfs.core.windows.net.linkedServiceName\", \"AzureDataLakeStorage2\")\r\n",
-							"spark.conf.set(\"fs.azure.account.oauth.provider.type.huangzhistoragelogs.dfs.core.windows.net\",\"com.microsoft.azure.synapse.tokenlibrary.LinkedServiceBasedTokenProvider\")\r\n",
-							"\r\n",
-							"df = spark.read.csv('abfss://dataset@huangzhistoragelogs.dfs.core.windows.net/mstest/')\r\n",
+							"spark.conf.set(f\"spark.storage.synapse.huangzhistoragelogs.dfs.core.windows.net.linkedServiceName\", \"AzureDataLakeStorage1\")\r\n",
+							"spark.conf.set(f\"fs.azure.account.auth.type.huangzhistoragelogs.dfs.core.windows.net\", \"SAS\")\r\n",
+							"spark.conf.set(f\"fs.azure.sas.token.provider.type.huangzhistoragelogs.dfs.core.windows.net\", \"com.microsoft.azure.synapse.tokenlibrary.LinkedServiceBasedSASProvider\")\r\n",
+							"df = spark.read.csv(\"abfss://dataset@huangzhistoragelogs.dfs.core.windows.net/mstest/\")\r\n",
 							"display(df.limit(10))"
 						],
 						"outputs": [],
-						"execution_count": 16
+						"execution_count": 22
 					},
 					{
 						"cell_type": "code",
