@@ -1,0 +1,24 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"value": "huangzhitestsynapse"
+		},
+		"AzureDataLakeStorage1_accountKey": {
+			"value": ""
+		},
+		"huangzhitestsynapse-WorkspaceDefaultSqlServer_connectionString": {
+			"value": ""
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"value": "https://huangzhistoragelogs.dfs.core.windows.net/"
+		},
+		"AzureDataLakeStorage2_properties_typeProperties_url": {
+			"value": "https://huangzhistoragelogs.dfs.core.windows.net/"
+		},
+		"huangzhitestsynapse-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"value": "https://huangzhitestadls.dfs.core.windows.net"
+		}
+	}
+}
